@@ -1,0 +1,6 @@
+extends layout
+
+block content
+    form(action="/file", method='post')
+        input(type="file" id="file" value="file")
+        input(type='submit',value='upload')
