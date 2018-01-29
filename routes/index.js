@@ -21,8 +21,9 @@ router.get('/:string', function(req, res, next){
   }
   catch (a){
       var error = "could not resolve " + req.params.string + " into phone number\n"
-      + "error: " + a;
+      + a;
       res.end(error);
+
     }
 
 });
