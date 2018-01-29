@@ -13,12 +13,11 @@ router.get('/', function(req, res, next) {
 
 /* Lib phonenumber request*/
 router.get('/:string', function(req, res, next){
-    res.writeHead(200, {
-        'Content-Type': 'text/html'
-    });
+
   try{
       var phoneNumber = phoneUtil.parse(req.params.string, 'US');
-      res.end(phoneUtil.format(phoneNumber, PNF.INTERNATIONAL));
+      res.json(phoneUtil.format(phoneNumber, PNF.INTERNATIONAL))
+      //res.end(phoneUtil.format(phoneNumber, PNF.INTERNATIONAL));
   }
   catch (a){
       var error = "could not resolve " + req.params.string + " into phone number\n"
