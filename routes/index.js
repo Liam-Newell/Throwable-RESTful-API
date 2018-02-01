@@ -13,11 +13,11 @@ router.get('/', function(req, res, next) {
 });
 
 /* Lib phonenumber request*/
-router.get('/test/:string', function(req, res, next){
+router.get('/api/phonenumbers/parse/text/:string', function(req, res, next){
 
   try{
       var phoneNumber = phoneUtil.parse(req.params.string, 'US');
-      res.json(phoneUtil.format(phoneNumber, PNF.INTERNATIONAL))
+      res.json([phoneUtil.format(phoneNumber, PNF.INTERNATIONAL)])
       //res.end(phoneUtil.format(phoneNumber, PNF.INTERNATIONAL));
   }
   catch (a){
