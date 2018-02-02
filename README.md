@@ -22,3 +22,5 @@ Then you can start the nodeJS local host. Run the below command to start the API
 ```
 node www
 ```
+##Testing
+Could not for the life of me get the mocha tester to work correctly but the text.txt file can be uploaded fine with correct returns using postman, and i also tested most name spaces.**If by chance my mocha code does work** type mocha
