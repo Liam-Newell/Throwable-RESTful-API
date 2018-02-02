@@ -32,21 +32,21 @@ router.get('/api/phonenumbers/parse/text/:string', function(req, res, next){
 
 
 router.post('/api/phonenumbers/parse/file', upload.single('file'), function(req, res, next) {
-    if(!req.file) {
+    if(req.file) {
         try {
-            fs.readFileSync(req.file.path, "utf8", function(err,data){;
+            fs.readFile(req.file.path, 'utf8', function(err,data){
                 if (err) {
                     console.log('error thrown');
-                    throw err;}
-                console.log('error thrown');
+                    throw err;
+                }
+                else{
+                console.log('Passed');
                 console.log(data);
-                var fileText = contents.toString('ascii');
-                var buf = Buffer.from(fileText, 'base64');
-                var number = buf.toString('ascii');
+                var fileText = data.toString().split('\n');
+                var phoneList = parsePhoneNumbers(fileText);
+                res.json(phoneList)
+                }
 
-                var phoneNumber = phoneUtil.parse(number, 'US');
-                res.json(phoneUtil.format(phoneNumber, PNF.INTERNATIONAL))
-                //res.end(phoneUtil.format(phoneNumber, PNF.INTERNATIONAL));
             });
 
         }
@@ -57,7 +57,27 @@ router.post('/api/phonenumbers/parse/file', upload.single('file'), function(req,
 
             }
         }
+        else{
+        console.error('error')
+        res.end();
+    }
 });
+
+function parsePhoneNumbers(phoneNumbers)
+{
+    var phoneList = [];
+    for(var i = 0; i < phoneNumbers.length; i++)
+    {
+        try{
+            var phoneNumber = phoneUtil.parse(phoneNumbers[i], 'US');
+            phoneList.push(phoneUtil.format(phoneNumber, PNF.INTERNATIONAL));
+        }
+        catch(a){
+            console.error('failed on loop: ' + i + '\nwith error ' + a);
+        }
+    }
+    return Array.from(new Set(phoneList));
+}
 router.get('/file', function(req, res, next) {
     res.render('file');
 });
