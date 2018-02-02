@@ -1,6 +1,6 @@
 extends layout
 
 block content
-    form(action="/file", method='post')
+    form(action="/api/phonenumbers/parse/file", method='post')
         input(type="file" id="file" value="file")
         input(type='submit',value='upload')

@@ -58,7 +58,7 @@ router.post('/api/phonenumbers/parse/file', upload.single('file'), function(req,
             }
         }
         else{
-        console.error('error')
+        console.error('error');
         res.end();
     }
 });
