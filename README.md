@@ -18,7 +18,7 @@ npm install
 ```
 
 Then you can start the nodeJS local host. Run the below command to start the API.
-*First Navigate to the bin folder then run*
+**First Navigate to the bin folder then run**
 ```
 node www
 ```
