@@ -71,6 +71,18 @@ describe('API endpoint /api/phonenumbers/parse/file', function(){
         .then(function(res){
         expect(res).to.have.status(200);
     expect(res.body).to.be.an('array').that.include('+1 859-999-1843', '+1 316-984-6123', '+1 321-342-6332');
-});
-})
+    });
+  });
+    
+    it.only('should parse numbers encoded in base64 text file', function(){
+      return chai.request(app)
+        .post('/api/phonenumbers/parse/file')
+        .set('Content-Type', 'text/plain')
+        .attach('file', fs.readFileSync('../Throwable-RESTful-API/base64_file.txt'), 'base64_file.txt')
+        .then(function(result){
+          expect(result).to.have.status(200);
+          expect(result.body).to.be.an('array').that.include('+1 416-123-1234',
+           '+1 647-222-3333', '+1 416-491-5050');
+        })
+    });
 });

@@ -60,3 +60,6 @@ typings/
 .idea/inspectionProfiles/
 .idea/workspace.xml
 .idea
+
+# Microsoft VSCode editor
+.vscode/
