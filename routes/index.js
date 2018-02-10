@@ -23,9 +23,10 @@ router.get('/api/phonenumbers/parse/text/:string', function(req, res, next){
   catch (a){
       var error = "could not resolve " + req.params.string + " into phone number\n"
       + a;
-      res.end(error);
-
-    }
+      console.error(a);
+      res.status(400).json([]);
+      
+  }
 
 });
 
