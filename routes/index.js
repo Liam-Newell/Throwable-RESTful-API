@@ -42,7 +42,6 @@ router.post('/api/phonenumbers/parse/file', upload.single('file'), function(req,
             .on('end', () => {
               var decodedText = Buffer.from(data, 'base64').toString();
               decodedText = decodedText.split('\n');
-              console.log(decodedText);
               phoneList = parsePhoneNumbers(decodedText);
               res.json(phoneList);
             });
