@@ -19,7 +19,7 @@ var fs = require('fs');
 
 chai.use(require('chai-http'));
 
-var app = require('../routes/index.js');
+var app = require('../app.js');
 
 describe('API endpoint /', function(){
 
@@ -29,8 +29,8 @@ describe('API endpoint /', function(){
         .get('/')
         .then(function(res){
         expect(res).to.have.status(200);
-});
-});
+    });
+  });
 });
 
 describe('API endpoint /api/phonenumbers/parse/text', function(){
@@ -41,36 +41,54 @@ describe('API endpoint /api/phonenumbers/parse/text', function(){
         .get('/api/phonenumbers/parse/text/Seneca%20Phone%20Number%3A%20416-491-5050')
         .then(function(res){
         expect(res).to.have.status(200);
-    expect(res.body).to.be.an('array').that.include('+1 416-491-5050');
-});
+        expect(res.body).to.be.an('array').that.include('+1 416-491-5050');
+    });
 });
 
-// GET - nothing -- TODO
-/*
-it('should return an empty array', () => {
+// GET - nothing --
+
+it('should return http 400 with an empty array given \'nothing\' as input', 
+  () => {
     return chai.request(app)
     .get('/api/phonenumbers/parse/text/nothing')
-    .then((res) => {
+    .then (function() { new Error('This test should not have passed!')})
+    .catch(function(res){
       expect(res).to.have.status(400);
-      expect(res.body).to.be.an('array').that.is.empty;
+      expect(res.response.res.body).to.be.an('array').that.is.empty;
     });
   });
-*/
-
 });
 
 
 describe('API endpoint /api/phonenumbers/parse/file', function(){
 
-    // POST - file
-    it('should return [\'+1 859-999-1843\', \'+1 316-984-6123\', \'+1 321-342-6332\']', function(){
+    // POST - File in Base64 encoding
+    it('should parse numbers encoded in base64 text file', function(){
+      return chai.request(app)
+        .post('/api/phonenumbers/parse/file')
+        .set('Content-Type', 'text/plain')
+        .attach('file', fs.readFileSync('../Throwable-RESTful-API/base64_file.txt'), 'base64_file.txt')
+        .then(function(result){
+          expect(result).to.have.status(200);
+          expect(result.body).to.be.an('array')
+          .that.include('+1 416-123-1234', '+1 647-222-3333',
+           '+1 416-491-5050');
+        });
+    });
+
+    // POST - file 
+    it('should return [\'+1 519-579-7250\', \'+1 613-555-0127\',\'+1 613-555-0120\', \'+1 613-555-0192\', \'+1 613-555-0117\',\'+1 613-555-0105\', \'+1 613-555-0107\', \'+1 613-555-0120\',\'+1 613-555-0192\', \'+1 613-555-0117\']', function(){
     return chai.request(app)
         .post('/api/phonenumbers/parse/file')
         .set('Content-Type', 'text/plain')
         .attach('file', fs.readFileSync('../Throwable-RESTful-API/file.txt'), 'text.txt')
         .then(function(res){
         expect(res).to.have.status(200);
-    expect(res.body).to.be.an('array').that.include('+1 859-999-1843', '+1 316-984-6123', '+1 321-342-6332');
-});
-})
+        expect(res.body).to.be.an('array')
+        .that.include('+1 519-579-7250', '+1 613-555-0127',
+         '+1 613-555-0120', '+1 613-555-0192', '+1 613-555-0117',
+         '+1 613-555-0105', '+1 613-555-0107', '+1 613-555-0120',
+         '+1 613-555-0192', '+1 613-555-0117');
+    });
+  });
 });

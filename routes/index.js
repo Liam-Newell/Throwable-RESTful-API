@@ -18,46 +18,42 @@ router.get('/api/phonenumbers/parse/text/:string', function(req, res, next){
 
   try{
       var phoneNumber = phoneUtil.parse(req.params.string, 'US');
-      res.json([phoneUtil.format(phoneNumber, PNF.INTERNATIONAL)])
-      //res.end(phoneUtil.format(phoneNumber, PNF.INTERNATIONAL));
+      res.json([phoneUtil.format(phoneNumber, PNF.INTERNATIONAL)]);
   }
   catch (a){
       var error = "could not resolve " + req.params.string + " into phone number\n"
       + a;
-      res.end(error);
-
-    }
+      console.error(a);
+      res.status(400).json([]);
+      
+  }
 
 });
 
 
-router.post('/api/phonenumbers/parse/file', upload.single('file'), function(req, res, next) {
+router.post('/api/phonenumbers/parse/file', upload.single('file'), function(req, res) {
     if(req.file) {
         try {
-            fs.readFile(req.file.path, 'utf8', function(err,data){
-                if (err) {
-                    console.log('error thrown');
-                    throw err;
-                }
-                else{
-                console.log('Passed');
-                console.log(data);
-                var fileText = data.toString().split('\n');
-                var phoneList = parsePhoneNumbers(fileText);
-                res.json(phoneList)
-                }
-
+            let fileReader = fs.createReadStream(req.file.path, {encoding:'utf8'});
+            let data = ""; 
+            var phoneList = null;
+            fileReader.on('data', function(dataFragments){
+              data += dataFragments;
+            })
+            .on('end', () => {
+              var decodedText = Buffer.from(data, 'base64').toString();
+              decodedText = decodedText.split('\n');
+              phoneList = parsePhoneNumbers(decodedText);
+              res.json(phoneList);
             });
-
         }
         catch (a) {
-                var error = "could not resolve " + req.params.string + " into phone number\n"
-                    + a;
-                res.end(error);
-
-            }
+           var error = "could not open " + req.file.originalname + "\n"
+                + a;
+           res.end(error);
         }
-        else{
+    }
+    else{
         console.error('error');
         res.end();
     }
@@ -66,18 +62,23 @@ router.post('/api/phonenumbers/parse/file', upload.single('file'), function(req,
 function parsePhoneNumbers(phoneNumbers)
 {
     var phoneList = [];
-    for(var i = 0; i < phoneNumbers.length; i++)
-    {
-        try{
-            var phoneNumber = phoneUtil.parse(phoneNumbers[i], 'US');
-            phoneList.push(phoneUtil.format(phoneNumber, PNF.INTERNATIONAL));
-        }
-        catch(a){
-            console.error('failed on loop: ' + i + '\nwith error ' + a);
-        }
+    let number = "";
+    try{
+      
+      for(let i = 0; i < phoneNumbers.length; i++){
+        number = phoneNumbers[i];
+        var phoneNumber = phoneUtil.parse(phoneNumbers[i], 'US');
+        phoneList.push(phoneUtil.format(phoneNumber, PNF.INTERNATIONAL));
+      }
+    }
+    catch(a){
+        console.error('Error: Could not resolve "'+ number + '" as phone number.\n');
+        console.error("--- Printing stack trace ---");
+        console.error(a);
     }
     return Array.from(new Set(phoneList));
 }
+
 router.get('/file', function(req, res, next) {
     res.render('file');
 });
