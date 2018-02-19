@@ -17,8 +17,10 @@ router.get('/', function(req, res, next) {
 router.get('/api/phonenumbers/parse/text/:string', function(req, res, next){
 
   try{
-      var phoneNumber = phoneUtil.parse(req.params.string, 'US');
-      res.json([phoneUtil.format(phoneNumber, PNF.INTERNATIONAL)]);
+      var numbers = req.params.string.toString().split(' ');
+      var phonelist = parsePhoneNumbers(numbers);
+      //var phoneNumber = phoneUtil.parse(req.params.string, 'US');
+      res.json(phonelist);
   }
   catch (a){
       var error = "could not resolve " + req.params.string + " into phone number\n"
@@ -34,17 +36,18 @@ router.get('/api/phonenumbers/parse/text/:string', function(req, res, next){
 router.post('/api/phonenumbers/parse/file', upload.single('file'), function(req, res) {
     if(req.file) {
         try {
-            let fileReader = fs.createReadStream(req.file.path, {encoding:'utf8'});
-            let data = ""; 
-            var phoneList = null;
-            fileReader.on('data', function(dataFragments){
-              data += dataFragments;
-            })
-            .on('end', () => {
-              var decodedText = Buffer.from(data, 'base64').toString();
-              decodedText = decodedText.split('\n');
-              phoneList = parsePhoneNumbers(decodedText);
-              res.json(phoneList);
+            fs.readFile(req.file.path, 'utf8', function(err,data) {
+                if (err) {
+                    console.log('error thrown');
+                    throw err;
+                }
+                else {
+                    console.log('Passed');
+                    console.log(data);
+                    var fileText = data.toString().split('\n');
+                    var phoneList = parsePhoneNumbers(fileText);
+                    res.json(phoneList);
+                }
             });
         }
         catch (a) {
@@ -63,19 +66,22 @@ function parsePhoneNumbers(phoneNumbers)
 {
     var phoneList = [];
     let number = "";
-    try{
+
       
       for(let i = 0; i < phoneNumbers.length; i++){
         number = phoneNumbers[i];
-        var phoneNumber = phoneUtil.parse(phoneNumbers[i], 'US');
-        phoneList.push(phoneUtil.format(phoneNumber, PNF.INTERNATIONAL));
+          try{
+            var phoneNumber = phoneUtil.parse(phoneNumbers[i], 'US');
+            phoneList.push(phoneUtil.format(phoneNumber, PNF.INTERNATIONAL));
+          }
+          catch(a){
+              console.error('Error: Could not resolve "'+ number + '" as phone number.\n');
+              console.error("--- Printing stack trace ---");
+              console.error(a);
+          }
       }
-    }
-    catch(a){
-        console.error('Error: Could not resolve "'+ number + '" as phone number.\n');
-        console.error("--- Printing stack trace ---");
-        console.error(a);
-    }
+
+
     return Array.from(new Set(phoneList));
 }
 
